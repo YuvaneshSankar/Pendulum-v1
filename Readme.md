@@ -2,7 +2,7 @@
 
 A PyTorch implementation of Deep Deterministic Policy Gradient (DDPG) for continuous control tasks, demonstrated on the Pendulum-v1 environment from OpenAI Gym.
 
-![Pendulum Environment](https://gymnasium.farama.org/_images/pendulum.gif)
+
 
 
 ## Table of Contents
