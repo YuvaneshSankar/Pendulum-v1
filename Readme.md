@@ -279,7 +279,7 @@ save_frequency: 10000 # Model save frequency
 Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ### Development Setup
-git clone https://github.com/yourusername/ddpg-pendulum.git
+git clone https://github.com/YuvaneshSankar/Pendulum-v1
 cd ddpg-pendulum
 pip install -e .
 
