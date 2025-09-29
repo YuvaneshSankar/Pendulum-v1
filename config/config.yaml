@@ -1,0 +1,31 @@
+environment:
+  name: "Pendulum-v1"
+  max_episode_steps: 200
+  
+agent:
+  lr_actor: 0.001
+  lr_critic: 0.002
+  tau: 0.005          # Soft update rate
+  gamma: 0.99        
+  batch_size: 64
+  buffer_size: 1000000
+  
+network:
+  hidden_size: [400, 300]  
+  
+noise:
+  type: "ou_noise"         # Ornstein-Uhlenbeck
+  mu: 0.0
+  theta: 0.15
+  sigma: 0.2
+  
+training:
+  total_timesteps: 100000
+  warmup_steps: 1000       # Random actions before training
+  update_frequency: 1      # Update every N steps
+  save_frequency: 10000    # Save model every N steps
+  
+logging:
+  log_frequency: 1000
+  eval_frequency: 5000
+  tensorboard: true
