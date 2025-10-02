@@ -24,7 +24,9 @@ class Agent:
         # Initialize Ornstein-Uhlenbeck noise for exploration
         if noise_params is None:
             noise_params = {"mu": 0.0, "theta": 0.15, "sigma": 0.2}
-        self.noise = OUNoise(action_dim, **noise_params)
+        # Filter out 'type' parameter as OUNoise doesn't expect it
+        filtered_noise_params = {k: v for k, v in noise_params.items() if k != 'type'}
+        self.noise = OUNoise(action_dim, **filtered_noise_params)
         
         # Initialize target networks with the same weights as main networks
         self.hard_update_target_networks()
