@@ -1,9 +1,9 @@
 import torch.nn as nn
 import torch
-from network import Actor, Critic
 from pathlib import Path
-from buffer import Buffer
-from noise import OUNoise
+from .network import Actor, Critic
+from .buffer import Buffer
+from .noise import OUNoise
 
 class Agent:
     def __init__(self, input_dim, output_dim, action_dim, max_action, actor_lr, critic_lr, gamma, tau, buffer_size=1000000, batch_size=64, noise_params=None):

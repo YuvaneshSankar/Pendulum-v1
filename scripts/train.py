@@ -5,6 +5,9 @@ import torch
 import gymnasium as gym
 from pathlib import Path
 
+import sys
+sys.path.append(str(Path(__file__).parent.parent / "src"))
+
 from ddpg.agent import Agent
 from ddpg.noise import OUNoise
 from environment.wrapper import NormalizeActionWrapper
