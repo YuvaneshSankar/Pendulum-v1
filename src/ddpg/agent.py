@@ -25,6 +25,9 @@ class Agent:
         if noise_params is None:
             noise_params = {"mu": 0.0, "theta": 0.15, "sigma": 0.2}
         self.noise = OUNoise(action_dim, **noise_params)
+        
+        # Initialize target networks with the same weights as main networks
+        self.hard_update_target_networks()
 
     def select_action(self, state, add_noise=True):
         state = torch.FloatTensor(state).unsqueeze(0).to(self.device)
@@ -62,9 +65,9 @@ class Agent:
         state = torch.FloatTensor(state).to(self.device)
         action = self.actor(state)
         quality = self.critic(state, action)
-        #We have to maximize the quality but the optimizer in the nn minimizes the loss function so we do this -ve
-        #Also we have to just give the qaulit*action to the optimizer it calculates the gradients of both
-        #We take the mean becuase we have to go for the average quality of the batch
+        # We have to maximize the quality but the optimizer minimizes the loss function, so we negate it
+        # The optimizer calculates gradients for both the actor and critic networks
+        # We take the mean because we want the average quality of the batch
         actor_loss = -quality.mean()
         return actor_loss
 
@@ -78,6 +81,13 @@ class Agent:
             target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
         for target_param, param in zip(self.target_critic.parameters(), self.critic.parameters()):
             target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
+    
+    def hard_update_target_networks(self):
+        """Hard update target networks by copying weights from main networks"""
+        for target_param, param in zip(self.target_actor.parameters(), self.actor.parameters()):
+            target_param.data.copy_(param.data)
+        for target_param, param in zip(self.target_critic.parameters(), self.critic.parameters()):
+            target_param.data.copy_(param.data)
 
     def learn(self):
         # Only learn if buffer has enough samples

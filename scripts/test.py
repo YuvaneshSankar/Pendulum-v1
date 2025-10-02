@@ -1,6 +1,10 @@
 import gymnasium as gym
 import numpy as np
+import sys
 from pathlib import Path
+
+sys.path.append(str(Path(__file__).parent.parent / "src"))
+
 from ddpg.agent import Agent
 from environment.wrapper import NormalizeActionWrapper
 
