@@ -3,9 +3,10 @@ import torch
 from network import Actor, Critic
 from pathlib import Path
 from buffer import Buffer
+from noise import OUNoise
 
 class Agent:
-    def __init__(self, input_dim, output_dim, action_dim, max_action, actor_lr, critic_lr, gamma, tau, buffer_size=1000000, batch_size=64):
+    def __init__(self, input_dim, output_dim, action_dim, max_action, actor_lr, critic_lr, gamma, tau, buffer_size=1000000, batch_size=64, noise_params=None):
         self.actor = Actor(input_dim, output_dim, max_action, lr=actor_lr)
         self.critic = Critic(input_dim, action_dim, lr=critic_lr)
         self.target_actor = Actor(input_dim, output_dim, max_action, lr=actor_lr)
@@ -20,11 +21,21 @@ class Agent:
         self.batch_size = batch_size
         # Initialize replay buffer
         self.buffer = Buffer(buffer_size, action_dim, input_dim)
+        # Initialize Ornstein-Uhlenbeck noise for exploration
+        if noise_params is None:
+            noise_params = {"mu": 0.0, "theta": 0.15, "sigma": 0.2}
+        self.noise = OUNoise(action_dim, **noise_params)
 
-    def select_action(self, state):
+    def select_action(self, state, add_noise=True):
         state = torch.FloatTensor(state).unsqueeze(0).to(self.device)
-        action = self.actor(state)
-        return action.cpu().detach().numpy()[0]
+        action = self.actor(state).cpu().detach().numpy()[0]
+        if add_noise:
+            action += self.noise.sample()
+        return action
+
+    def reset_noise(self):
+        # Call this at the start of each episode
+        self.noise.reset()
 
     def store_transition(self, state, action, reward, next_state, done):
         # Store experience in the replay buffer
@@ -101,3 +112,12 @@ class Agent:
         torch.save(self.critic.state_dict(), save_dir / f"{checkpoint_name}_critic.pth")
         torch.save(self.target_actor.state_dict(), save_dir / f"{checkpoint_name}_target_actor.pth")
         torch.save(self.target_critic.state_dict(), save_dir / f"{checkpoint_name}_target_critic.pth")
+
+    def load_models(self, checkpoint_name="ddpg_checkpoint"):
+        current_path = Path(__file__).resolve()
+        project_root = current_path.parent.parent
+        save_dir = project_root / "models" / "saved_models"
+        self.actor.load_state_dict(torch.load(save_dir / f"{checkpoint_name}_actor.pth", map_location=self.device))
+        self.critic.load_state_dict(torch.load(save_dir / f"{checkpoint_name}_critic.pth", map_location=self.device))
+        self.target_actor.load_state_dict(torch.load(save_dir / f"{checkpoint_name}_target_actor.pth", map_location=self.device))
+        self.target_critic.load_state_dict(torch.load(save_dir / f"{checkpoint_name}_target_critic.pth", map_location=self.device))
